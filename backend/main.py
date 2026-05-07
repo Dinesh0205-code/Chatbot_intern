@@ -46,11 +46,24 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ---------- In-memory state ----------
 state = {
-    "base_index": None,   # silent background data
-    "user_index": None,   # user uploaded files
+    "base_index": None,
+    "user_index": None,
     "chat_history": [],
     "loaded_files": [],
 }
+
+# ---------- Keywords ----------
+UPLOAD_KEYWORDS = [
+    "resume", "cv", "candidate", "applicant",
+    "match", "summarize", "profile"
+]
+
+POLICY_KEYWORDS = [
+    "policy", "policies", "conduct", "leave", "hr",
+    "it policy", "rules", "regulation", "guideline",
+    "employee", "company", "attendance", "holiday",
+    "salary", "benefits", "code of conduct", "compliance"
+]
 
 
 # ---------- Request/Response Models ----------
@@ -72,18 +85,12 @@ def load_index_from_folder(folder: str) -> VectorStoreIndex:
 
 # ---------- Helper: Get best query engine ----------
 def get_query_engine(user_only: bool = False):
-    # If user uploaded files exist and question is about them
     if user_only and state["user_index"] is not None:
         return state["user_index"].as_query_engine(similarity_top_k=5)
-
-    # If both exist, use user files (more relevant for recruitment)
-    if state["user_index"] is not None:
-        return state["user_index"].as_query_engine(similarity_top_k=5)
-
-    # Fall back to background data silently
     if state["base_index"] is not None:
         return state["base_index"].as_query_engine(similarity_top_k=3)
-
+    if state["user_index"] is not None:
+        return state["user_index"].as_query_engine(similarity_top_k=5)
     return None
 
 
@@ -158,18 +165,27 @@ async def chat(request: ChatRequest):
     sources = []
 
     try:
-        # Detect if question is about uploaded files
-        upload_keywords = [
-            "resume", "cv", "candidate", "applicant", "upload",
-            "file", "match", "summarize", "profile", "document",
-            "experience", "skills", "qualification", "job"
-        ]
+        msg_lower = user_message.lower()
+
         is_upload_query = (
-            any(word in user_message.lower() for word in upload_keywords)
+            any(word in msg_lower for word in UPLOAD_KEYWORDS)
             and state["user_index"] is not None
         )
 
-        query_engine = get_query_engine(user_only=is_upload_query)
+        is_policy_query = any(word in msg_lower for word in POLICY_KEYWORDS)
+
+        # Route to correct index
+        if is_policy_query and state["base_index"] is not None:
+            # Policy question → always use background data
+            query_engine = state["base_index"].as_query_engine(similarity_top_k=3)
+
+        elif is_upload_query and state["user_index"] is not None:
+            # Resume/candidate question → use uploaded files
+            query_engine = state["user_index"].as_query_engine(similarity_top_k=5)
+
+        else:
+            # Default fallback
+            query_engine = get_query_engine()
 
         if query_engine:
             response = query_engine.query(user_message)
@@ -183,7 +199,7 @@ async def chat(request: ChatRequest):
                         sources.append(fname)
                         seen.add(fname)
         else:
-            # No data at all — answer from LLM
+            # No data at all — answer directly from LLM
             messages = [
                 ChatMessage(role="system", content=(
                     "You are a professional recruitment assistant. "

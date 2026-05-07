@@ -870,10 +870,8 @@
     const botAv  = `<div class="avatar"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:white;fill:none;stroke-width:1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>`;
     const userAv = `<div class="avatar"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:#475569;fill:none;stroke-width:1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>`;
 
-    const srcHtml = sources.length
-      ? `<div class="sources-row">${sources.map(s => `<span class="source-tag">${s}</span>`).join("")}</div>`
-      : "";
-
+  const srcHtml = "";
+  
     div.innerHTML = `
       ${role === "bot" ? botAv : userAv}
       <div class="msg-wrap">
