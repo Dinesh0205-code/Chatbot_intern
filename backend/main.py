@@ -33,7 +33,12 @@ app = FastAPI(title="Recruitment Assistant API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:5500",
+        "http://127.0.0.1:5173",
+        "https://your-project.web.app",  # update with Firebase URL after deploy
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -176,15 +181,12 @@ async def chat(request: ChatRequest):
 
         # Route to correct index
         if is_policy_query and state["base_index"] is not None:
-            # Policy question → always use background data
             query_engine = state["base_index"].as_query_engine(similarity_top_k=3)
 
         elif is_upload_query and state["user_index"] is not None:
-            # Resume/candidate question → use uploaded files
             query_engine = state["user_index"].as_query_engine(similarity_top_k=5)
 
         else:
-            # Default fallback
             query_engine = get_query_engine()
 
         if query_engine:
@@ -199,7 +201,6 @@ async def chat(request: ChatRequest):
                         sources.append(fname)
                         seen.add(fname)
         else:
-            # No data at all — answer directly from LLM
             messages = [
                 ChatMessage(role="system", content=(
                     "You are a professional recruitment assistant. "
