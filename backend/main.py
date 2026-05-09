@@ -13,20 +13,20 @@ from pydantic import BaseModel
 
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
 from llama_index.core.llms import ChatMessage
+from llama_index.core.embeddings import resolve_embed_model
 from llama_index.llms.groq import Groq
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 # ---------- Load API Key ----------
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
 # ---------- LlamaIndex Settings ----------
 Settings.llm = Groq(
-    model="llama-3.3-70b-versatile",
+    model="llama-3.1-8b-instant",  # lighter model = less memory
     api_key=GROQ_API_KEY
 )
-Settings.embed_model = HuggingFaceEmbedding(
-    model_name="BAAI/bge-small-en-v1.5"
-)
+
+# Use simple local embedding - no heavy model download
+Settings.embed_model = resolve_embed_model("local:BAAI/bge-small-en-v1.5")
 
 # ---------- FastAPI App ----------
 app = FastAPI(title="Recruitment Assistant API")
@@ -37,7 +37,7 @@ app.add_middleware(
         "http://localhost:8000",
         "http://127.0.0.1:5500",
         "http://127.0.0.1:5173",
-        "https://your-project.web.app",  # update with Firebase URL after deploy
+        "https://your-project.web.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -91,11 +91,11 @@ def load_index_from_folder(folder: str) -> VectorStoreIndex:
 # ---------- Helper: Get best query engine ----------
 def get_query_engine(user_only: bool = False):
     if user_only and state["user_index"] is not None:
-        return state["user_index"].as_query_engine(similarity_top_k=5)
+        return state["user_index"].as_query_engine(similarity_top_k=3)
     if state["base_index"] is not None:
         return state["base_index"].as_query_engine(similarity_top_k=3)
     if state["user_index"] is not None:
-        return state["user_index"].as_query_engine(similarity_top_k=5)
+        return state["user_index"].as_query_engine(similarity_top_k=3)
     return None
 
 
@@ -182,10 +182,8 @@ async def chat(request: ChatRequest):
         # Route to correct index
         if is_policy_query and state["base_index"] is not None:
             query_engine = state["base_index"].as_query_engine(similarity_top_k=3)
-
         elif is_upload_query and state["user_index"] is not None:
-            query_engine = state["user_index"].as_query_engine(similarity_top_k=5)
-
+            query_engine = state["user_index"].as_query_engine(similarity_top_k=3)
         else:
             query_engine = get_query_engine()
 
