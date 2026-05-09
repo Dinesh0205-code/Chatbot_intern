@@ -3,7 +3,7 @@ uvicorn
 python-multipart
 llama-index
 llama-index-llms-groq
-llama-index-embeddings-huggingface
+llama-index-embeddings-fastembed
+fastembed
 llama-index-readers-file
-sentence-transformers
 python-dotenv
