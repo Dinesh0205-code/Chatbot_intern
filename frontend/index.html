@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recruitment Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:       #1a56db;
+      --primary-dark:  #1244b0;
+      --primary-light: #eef2fd;
+      --primary-mid:   #c2d4fb;
+      --white:         #ffffff;
+      --gray-50:       #f8fafc;
+      --gray-100:      #f1f5f9;
+      --gray-200:      #e2e8f0;
+      --gray-300:      #cbd5e1;
+      --gray-400:      #94a3b8;
+      --gray-500:      #64748b;
+      --gray-600:      #475569;
+      --gray-700:      #334155;
+      --gray-900:      #0f172a;
+      --success:       #16a34a;
+      --success-light: #dcfce7;
+      --danger:        #dc2626;
+      --danger-light:  #fee2e2;
+      --shadow-sm:     0 1px 3px rgba(0,0,0,0.07);
+      --shadow-md:     0 4px 12px rgba(0,0,0,0.09);
+      --radius:        10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-900);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+      font-size: 14px;
+    }
+
+    /* ══ SIDEBAR ══ */
+    #sidebar {
+      width: 272px;
+      min-width: 272px;
+      background: var(--white);
+      border-right: 1px solid var(--gray-200);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 18px 20px;
+      background: var(--primary);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,0.65);
+      margin-top: 1px;
+    }
+
+    .sidebar-body {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-bottom: 8px;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 1.5px dashed var(--gray-300);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--gray-50);
+      position: relative;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon-wrap {
+      width: 38px;
+      height: 38px;
+      background: var(--primary-light);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+    }
+
+    .upload-icon-wrap svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--primary);
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .upload-zone h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 3px;
+    }
+
+    .upload-zone p {
+      font-size: 11px;
+      color: var(--gray-400);
+    }
+
+    /* File chips */
+    #file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .file-chip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 7px;
+      font-size: 12px;
+      color: var(--gray-700);
+    }
+
+    .file-chip svg {
+      width: 13px;
+      height: 13px;
+      stroke: var(--primary);
+      fill: none;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+    }
+
+    .file-chip span {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Progress */
+    #progress-wrap { display: none; }
+
+    .progress-track {
+      height: 3px;
+      background: var(--gray-200);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 3px;
+      animation: indeterminate 1.4s infinite;
+    }
+
+    @keyframes indeterminate {
+      0%   { width: 0%; margin-left: 0; }
+      50%  { width: 70%; margin-left: 15%; }
+      100% { width: 0%; margin-left: 100%; }
+    }
+
+    .progress-text {
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-top: 5px;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: var(--radius);
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover    { background: var(--primary-dark); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--gray-500);
+      border: 1px solid var(--gray-200);
+    }
+
+    .btn-ghost:hover { background: var(--gray-50); color: var(--gray-700); }
+
+    /* Status */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .pill-success { background: var(--success-light); color: var(--success); }
+    .pill-success .pill-dot { background: var(--success); }
+    .pill-info    { background: var(--primary-light); color: var(--primary); }
+    .pill-info .pill-dot { background: var(--primary); }
+    .pill-error   { background: var(--danger-light); color: var(--danger); }
+    .pill-error .pill-dot { background: var(--danger); }
+
+    /* Active files */
+    #active-section { display: none; }
+
+    .sidebar-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--gray-200);
+    }
+
+    /* ══ MAIN ══ */
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--gray-50);
+    }
+
+    /* Topbar */
+    #topbar {
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 13px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .topbar-sub {
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+
+    /* Messages */
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    #chat-messages::-webkit-scrollbar { width: 4px; }
+    #chat-messages::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
+
+    /* Welcome */
+    #welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      text-align: center;
+      padding: 60px 40px;
+      gap: 10px;
+    }
+
+    .welcome-icon {
+      width: 52px;
+      height: 52px;
+      background: var(--primary-light);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .welcome-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--primary);
+      fill: none;
+      stroke-width: 1.6;
+    }
+
+    #welcome h3 {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    #welcome p {
+      font-size: 13px;
+      color: var(--gray-400);
+      max-width: 340px;
+      line-height: 1.65;
+    }
+
+    /* Messages */
+    .message {
+      display: flex;
+      gap: 10px;
+      max-width: 820px;
+      animation: msgIn 0.22s ease;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user { flex-direction: row-reverse; align-self: flex-end; }
+    .message.bot  { align-self: flex-start; }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .avatar svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .bot .avatar  { background: var(--primary); }
+    .bot .avatar svg { stroke: white; }
+    .user .avatar { background: var(--gray-200); }
+    .user .avatar svg { stroke: var(--gray-600); }
+
+    .msg-wrap { display: flex; flex-direction: column; gap: 3px; }
+
+    .bubble {
+      padding: 11px 15px;
+      border-radius: 11px;
+      font-size: 14px;
+      line-height: 1.65;
+      max-width: 640px;
+    }
+
+    .bot .bubble {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-bottom-left-radius: 3px;
+      box-shadow: var(--shadow-sm);
+      color: var(--gray-900);
+    }
+
+    .user .bubble {
+      background: var(--primary);
+      color: white;
+      border-bottom-right-radius: 3px;
+    }
+
+    .msg-time {
+      font-size: 11px;
+      color: var(--gray-400);
+      padding: 0 3px;
+    }
+
+    .user .msg-time { text-align: right; }
+
+    .sources-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .source-tag {
+      padding: 2px 8px;
+      background: var(--primary-light);
+      border: 1px solid var(--primary-mid);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    /* Typing */
+    .typing {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 15px;
+    }
+
+    .typing span {
+      width: 6px;
+      height: 6px;
+      background: var(--gray-300);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); background: var(--gray-300); }
+      30%           { transform: translateY(-5px); background: var(--primary); }
+    }
+
+    /* Input */
+    #input-area {
+      background: white;
+      border-top: 1px solid var(--gray-200);
+      padding: 14px 28px;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+    }
+
+    #quick-bar {
+      display: none;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .qbtn {
+      padding: 5px 12px;
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--gray-600);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.18s;
+    }
+
+    .qbtn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary-mid);
+      color: var(--primary);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    #user-input {
+      flex: 1;
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--gray-900);
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      max-height: 120px;
+      line-height: 1.5;
+    }
+
+    #user-input:focus { border-color: var(--primary); background: white; }
+    #user-input::placeholder { color: var(--gray-400); }
+
+    #send-btn {
+      width: 40px;
+      height: 40px;
+      background: var(--primary);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.18s;
+      flex-shrink: 0;
+    }
+
+    #send-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    #send-btn:hover    { background: var(--primary-dark); }
+    #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      padding: 9px 15px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: all 0.25s;
+      z-index: 999;
+      pointer-events: none;
+      box-shadow: var(--shadow-md);
+    }
+
+    #toast.show    { opacity: 1; transform: translateY(0); }
+    #toast.success { background: var(--success-light); color: var(--success); border: 1px solid #86efac; }
+    #toast.error   { background: var(--danger-light);  color: var(--danger);  border: 1px solid #fca5a5; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Recruitment Bot</div>
+        <div class="brand-sub">AI-Powered Assistant</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-body">
+
+    <div>
+      <div class="section-label">Upload Documents</div>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="file-input" multiple accept=".pdf,.docx,.txt,.csv,.xlsx"/>
+        <div class="upload-icon-wrap">
+          <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+        </div>
+        <h4>Click or drag files here</h4>
+        <p>PDF, DOCX, TXT, CSV, XLSX</p>
+      </div>
+    </div>
+
+    <div id="file-list"></div>
+
+    <div id="progress-wrap">
+      <div class="progress-track"><div class="progress-fill"></div></div>
+      <div class="progress-text">Processing documents...</div>
+    </div>
+
+    <button class="btn btn-primary" id="load-btn" disabled>
+      <svg viewBox="0 0 24 24"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.09"/></svg>
+      Load Documents
+    </button>
+
+    <div id="upload-status"></div>
+
+    <div id="active-section">
+      <div class="section-label">Loaded Files</div>
+      <div id="active-files"></div>
+    </div>
+
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="btn btn-ghost" id="clear-btn">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      Clear Conversation
+    </button>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+  <div id="topbar">
+    <div>
+      <div class="topbar-title">Recruitment Assistant</div>
+      <div class="topbar-sub" id="topbar-sub">Upload documents and ask questions to get started</div>
+    </div>
+    <div id="status-badge" class="pill pill-info">
+      <div class="pill-dot"></div>
+      <span>Connecting...</span>
+    </div>
+  </div>
+
+  <div id="chat-messages">
+    <div id="welcome">
+      <div class="welcome-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <h3>Recruitment Assistant</h3>
+      <p>Upload resumes, job descriptions, or any recruitment documents and ask questions to analyze them.</p>
+    </div>
+  </div>
+
+  <div id="input-area">
+    <div id="quick-bar">
+      <button class="qbtn" onclick="sendQ('Summarize the uploaded documents.')">Summarize</button>
+      <button class="qbtn" onclick="sendQ('Does the resume match the job profile? List matches, gaps, and give a match percentage.')">Match resume to job</button>
+      <button class="qbtn" onclick="sendQ('List all candidates with their qualifications.')">List candidates</button>
+      <button class="qbtn" onclick="sendQ('What are the key skills of this candidate?')">Key skills</button>
+    </div>
+    <div class="input-row">
+      <textarea id="user-input" rows="1" placeholder="Ask a question..."></textarea>
+      <button id="send-btn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+  const API = "http://127.0.0.1:8000";
+  let selectedFiles = [];
+  let isBusy = false;
+
+  window.addEventListener("load", checkStatus);
+
+  async function checkStatus() {
+    try {
+      const res  = await fetch(`${API}/api/status`);
+      const data = await res.json();
+      setBadge(data.index_ready ? "ready" : "waiting");
+    } catch {
+      setBadge("offline");
+    }
+  }
+
+  function setBadge(s) {
+    const b = document.getElementById("status-badge");
+    const m = {
+      ready:   { cls: "pill pill-success", text: "Ready" },
+      waiting: { cls: "pill pill-info",    text: "Ready" },
+      offline: { cls: "pill pill-error",   text: "Backend Offline" },
+    };
+    const v = m[s] || m.waiting;
+    b.className = v.cls;
+    b.innerHTML = `<div class="pill-dot"></div><span>${v.text}</span>`;
+  }
+
+  // File handling
+  const zone  = document.getElementById("upload-zone");
+  const input = document.getElementById("file-input");
+
+  zone.addEventListener("dragover",  e => { e.preventDefault(); zone.classList.add("dragover"); });
+  zone.addEventListener("dragleave", ()  => zone.classList.remove("dragover"));
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("dragover");
+    handleFiles([...e.dataTransfer.files]);
+  });
+  input.addEventListener("change", () => handleFiles([...input.files]));
+
+  function handleFiles(files) {
+    selectedFiles = files;
+    document.getElementById("file-list").innerHTML = files.map(f => `
+      <div class="file-chip">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>${f.name}</span>
+      </div>
+    `).join("");
+    document.getElementById("load-btn").disabled = !files.length;
+  }
+
+  // Load documents
+  document.getElementById("load-btn").addEventListener("click", async () => {
+    if (!selectedFiles.length) return;
+
+    const btn = document.getElementById("load-btn");
+    btn.disabled = true;
+    btn.textContent = "Processing...";
+    document.getElementById("progress-wrap").style.display = "block";
+
+    const form = new FormData();
+    selectedFiles.forEach(f => form.append("files", f));
+
+    try {
+      const res  = await fetch(`${API}/api/upload`, { method: "POST", body: form });
+      const data = await res.json();
+      document.getElementById("progress-wrap").style.display = "none";
+
+      if (res.ok) {
+        showToast(`${data.files.length} file(s) loaded`, "success");
+
+        document.getElementById("upload-status").innerHTML =
+          `<div class="pill pill-success"><div class="pill-dot"></div>${data.files.length} file(s) active</div>`;
+
+        const sec = document.getElementById("active-section");
+        sec.style.display = "block";
+        document.getElementById("active-files").innerHTML = data.files.map(f => `
+          <div class="file-chip">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>${f}</span>
+          </div>
+        `).join("");
+
+        document.getElementById("quick-bar").style.display = "flex";
+        document.getElementById("topbar-sub").textContent =
+          `${data.files.length} document(s) ready for analysis`;
+        setBadge("ready");
+        clearChatUI();
+      } else {
+        showToast(data.detail || "Upload failed", "error");
+      }
+    } catch {
+      document.getElementById("progress-wrap").style.display = "none";
+      showToast("Cannot connect to backend", "error");
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:white;fill:none;stroke-width:2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.09"/></svg>Load Documents`;
+  });
+
+  // Messaging
+  async function sendMessage() {
+    const inp = document.getElementById("user-input");
+    const msg = inp.value.trim();
+    if (!msg || isBusy) return;
+
+    inp.value = "";
+    inp.style.height = "auto";
+    hideWelcome();
+    appendMsg("user", msg);
+    showTyping();
+    isBusy = true;
+    document.getElementById("send-btn").disabled = true;
+
+    try {
+      const res  = await fetch(`${API}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg }),
+      });
+      const data = await res.json();
+      removeTyping();
+      appendMsg("bot", res.ok ? data.answer : (data.detail || "An error occurred."), res.ok ? data.sources : []);
+    } catch {
+      removeTyping();
+      appendMsg("bot", "Cannot connect to the backend. Please ensure the server is running.");
+    }
+
+    isBusy = false;
+    document.getElementById("send-btn").disabled = false;
+  }
+
+  function sendQ(text) {
+    document.getElementById("user-input").value = text;
+    sendMessage();
+  }
+
+  function hideWelcome() {
+    const w = document.getElementById("welcome");
+    if (w) w.remove();
+  }
+
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function appendMsg(role, text, sources = []) {
+    const c   = document.getElementById("chat-messages");
+    const div = document.createElement("div");
+    div.className = `message ${role}`;
+
+    const botAv  = `<div class="avatar"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:white;fill:none;stroke-width:1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>`;
+    const userAv = `<div class="avatar"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:#475569;fill:none;stroke-width:1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>`;
+
+  const srcHtml = "";
+  
+    div.innerHTML = `
+      ${role === "bot" ? botAv : userAv}
+      <div class="msg-wrap">
+        <div class="bubble">${esc(text).replace(/\n/g, "<br>")}${srcHtml}</div>
+        <div class="msg-time">${getTime()}</div>
+      </div>
+    `;
+    c.appendChild(div);
+    c.scrollTop = c.scrollHeight;
+  }
+
+  function showTyping() {
+    const c   = document.getElementById("chat-messages");
+    const div = document.createElement("div");
+    div.className = "message bot";
+    div.id = "typing";
+    div.innerHTML = `
+      <div class="avatar"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:white;fill:none;stroke-width:1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+      <div class="bubble typing"><span></span><span></span><span></span></div>
+    `;
+    c.appendChild(div);
+    c.scrollTop = c.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById("typing");
+    if (el) el.remove();
+  }
+
+  function esc(t) {
+    return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function clearChatUI() {
+    document.getElementById("chat-messages").innerHTML = "";
+  }
+
+  document.getElementById("clear-btn").addEventListener("click", () => {
+    fetch(`${API}/api/clear`, { method: "DELETE" });
+    clearChatUI();
+    showToast("Conversation cleared", "success");
+  });
+
+  document.getElementById("user-input").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+
+  document.getElementById("user-input").addEventListener("input", function () {
+    this.style.height = "auto";
+    this.style.height = Math.min(this.scrollHeight, 120) + "px";
+  });
+
+  function showToast(msg, type = "success") {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    setTimeout(() => t.className = "", 3000);
+  }
+</script>
+</body>
+</html>

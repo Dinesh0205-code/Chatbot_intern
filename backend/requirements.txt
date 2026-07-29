@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+llama-index
+llama-index-llms-groq
+llama-index-readers-file
+python-dotenv
+transformers
+torch --index-url https://download.pytorch.org/whl/cpu
+sentence-transformers
